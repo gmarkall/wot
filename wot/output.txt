@@ -1,0 +1,27 @@
+$ python app.py 
+Attempting to receive key 8E1431D5
+Received key 8E1431D5 with fingerprint C527EA07A9349B589C35E1BF11ADC0948E1431D5
+Checking fingerprint matches expected
+ - OK
+Key 8E1431D5 has uids:
+ - Fedora (22) <fedora@fedoraproject.org>
+Importing key with ID 12C9C5C767C6FAA2
+Importing key with ID B4C50297C2F4E238
+Key with ID B4C50297C2F4E238 received failed:
+gpg: requesting key C2F4E238 from hkp server pgp.mit.edu
+gpg: DBG: armor-keys-failed (KEY 0xB4C50297C2F4E238 BEGIN
+) ->0
+gpg: DBG: armor-keys-failed (KEY 0xB4C50297C2F4E238 FAILED 6
+) ->6
+gpg: no valid OpenPGP data found.
+[GNUPG:] NODATA 1
+gpg: Total number processed: 0
+[GNUPG:] IMPORT_RES 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+gpg: keyserver communications error: key not found
+gpg: keyserver communications error: bad public key
+gpg: keyserver receive failed: bad public key
+
+Importing key with ID B88EA93031056916
+Importing key with ID 6A3A10B31C109517
+Importing key with ID 11ADC0948E1431D5
+
