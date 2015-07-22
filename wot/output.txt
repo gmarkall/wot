@@ -1,4 +1,3 @@
-$ python app.py 
 Attempting to receive key 8E1431D5
 Received key 8E1431D5 with fingerprint C527EA07A9349B589C35E1BF11ADC0948E1431D5
 Checking fingerprint matches expected
@@ -24,4 +23,7 @@ gpg: keyserver receive failed: bad public key
 Importing key with ID B88EA93031056916
 Importing key with ID 6A3A10B31C109517
 Importing key with ID 11ADC0948E1431D5
+Key %s has uids:
+ - Petr Pisar <ppisar@redhat.com>
+ - Petr Pisar <petr.pisar@atlas.cz>
 
