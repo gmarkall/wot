@@ -55,24 +55,30 @@ class GPG(gnupg.GPG):
         key = self.list_keys(keyid=keyid)
         return key['uids']
 
+# This was supposed to work but the GPG interface does something odd that I didn't
+# understand, so every set of signatures was the same.
+
+#    def to_dict(self):
+#        keys = self.list_keys()
+#        keyid = []
+#        signedby = []
+#        uid = []
+#        trust = []
+#        for key in keys:
+#            keyidstr = key['keyid']
+#            keyid.append(keyidstr)
+#            signedby.append(self.list_sigs_by_keyid(keyidstr))
+#            uidlist = self.get_uids(keyidstr)
+#            uidstr = "\n".join(uidlist)
+#            uid.append(uidstr)
+#            trust.append(0)
+#
+#        return {'keyid': keyid, 'signedby': signedby, 'uid': uid, 'trust': trust}
+
+
+# This appears to work, but is a monster hack.
+
     def to_dict(self):
-        keys = self.list_keys()
-        keyid = []
-        signedby = []
-        uid = []
-        trust = []
-        for key in keys:
-            keyidstr = key['keyid']
-            keyid.append(keyidstr)
-            signedby.append(self.list_sigs_by_keyid(keyidstr))
-            uidlist = self.get_uids(keyidstr)
-            uidstr = "\n".join(uidlist)
-            uid.append(uidstr)
-            trust.append(0)
-
-        return {'keyid': keyid, 'signedby': signedby, 'uid': uid, 'trust': trust}
-
-    def to_dict2(self):
         # we want the key ids of all keys that are signed, but we get
         # the uids of all keys that are signed.
         # try to turn those signed uids back into keyids...
@@ -87,15 +93,12 @@ class GPG(gnupg.GPG):
                     if uid == suid:
                         signed_keyid = key['keyid']
                         uid_to_keyid_map.update({uid: signed_keyid})
-        #return uid_to_keyid_map
 
         # Now we have the mapping between uids and keyids, make a keyid-only dict of
         # signatures
         sig_keyid_dict = {}
         for k, v in res.sigs.items():
             sig_keyid_dict[uid_to_keyid_map[k]] = (k, v)
-
-        #return sig_keyid_dict
 
         # Now we have a dict of signatures with all keyids, create a list of all
         # unique keyids
@@ -106,8 +109,6 @@ class GPG(gnupg.GPG):
                 keyid_set.add(skeyid)
 
         all_keyids = list(keyid_set)
-
-        #return all_keyids
 
         # Now we have all the keyids, we should be able to compute who
         # signed each key
