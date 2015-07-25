@@ -12,12 +12,32 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the included LICENSE file for details.
 
 import gnupg
+import time
+from email import utils
 
 class GPG(gnupg.GPG):
     '''
     GPG class with additional methods to be slightly more convenient for
     exploring a web of trust.
     '''
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        keys = self.list_keys()
+        timestamps = {}
+        current_time = utils.formatdate(time.time())
+
+        # Add timestamps for keys we actually have
+        for k in keys:
+            timestamps[k['keyid']] = current_time
+
+        # Add timestamps for keys we don't actually have, but know about
+        sigs = self.list_sigs()
+        for k, v in sigs.sigs.items():
+            for ks in v:
+                timestamps[ks] = current_time
+
+        self.timestamps = timestamps
 
     def list_keys(self, *, secret=False, keyid=None):
         '''
@@ -136,5 +156,22 @@ class GPG(gnupg.GPG):
                 # We have no uid for these
                 uids.append(None)
 
-        return {'keyid': all_keyids, 'signedby': signedby, 'uid': uids}
+        timestamps = []
+        for keyid in all_keyids:
+            try:
+                ts = self.timestamps[keyid]
+                timestamps.append(ts)
+            except KeyError:
+                # Not every key has a timestamp but it probably should
+                timestamps.append(None)
+
+        # Obviously three asserts is enough to avoid writing any unit tests
+        # whatsoever.
+        l = len(all_keyids)
+        assert l == len(signedby)
+        assert l == len(uids)
+        assert l == len(timestamps)
+
+        return {'keyid': all_keyids, 'signedby': signedby,
+                'uid': uids, 'timestamp': timestamps}
 
