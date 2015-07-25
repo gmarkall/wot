@@ -1,3 +1,5 @@
+.ropeproject
+.sass-cache
 .ipynb_checkpoints
 *.swp
 __pycache__
