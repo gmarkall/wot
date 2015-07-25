@@ -124,5 +124,16 @@ class GPG(gnupg.GPG):
                 pass
             signedby.append(this_signedby)
 
-        return {'keyid': all_keyids, 'signedby': signedby}
+        uids = []
+        for keyid in all_keyids:
+            try:
+                uidlist = self.get_uids(keyid)
+                uidstr = "\n".join(uidlist)
+                uids.append(uidstr)
+            except KeyError:
+                # Not every key is downloaded, so we will get key errors.
+                # We have no uid for these
+                uids.append(None)
+
+        return {'keyid': all_keyids, 'signedby': signedby, 'uid': uids}
 
