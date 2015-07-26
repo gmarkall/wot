@@ -133,16 +133,18 @@ class GPG(gnupg.GPG):
         # Now we have all the keyids, we should be able to compute who
         # signed each key
         signedby = []
+        signedbykeys = []
         for keyid in all_keyids:
             this_signedby = []
             try:
                 sig_keyids = sig_keyid_dict[keyid][1]
+                signedbykeys.append(list(sig_keyids))
                 for sig_key in sig_keyids:
                     this_signedby.append(all_keyids.index(sig_key))
             except KeyError:
                 # Not everything is known to be signed by anything, so we will
                 # get key errors for them
-                pass
+                signedbykeys.append([])
             signedby.append(this_signedby)
 
         uids = []
@@ -169,9 +171,13 @@ class GPG(gnupg.GPG):
         # whatsoever.
         l = len(all_keyids)
         assert l == len(signedby)
+        assert l == len(signedbykeys)
         assert l == len(uids)
         assert l == len(timestamps)
 
-        return {'keyid': all_keyids, 'signedby': signedby,
-                'uid': uids, 'timestamp': timestamps}
+        return {'keyid': all_keyids,
+                'signedby': signedby,
+                'signedbykeys': signedbykeys,
+                'uid': uids,
+                'timestamp': timestamps}
 
