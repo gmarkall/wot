@@ -1,0 +1,14 @@
+version=1.4.3
+Protocol name: OpenPGP
+file=/usr/bin/gpg2, home=(null)
+Got a key
+11ADC0948E1431D5: Fedora <fedora@fedoraproject.org>First signature: 12C9C5C767C6FAA2
+
+Got a key
+12C9C5C767C6FAA2: Petr Pisar <ppisar@redhat.com>First signature: B91E1FE27130CC72
+
+Got a key
+249B39D24F25E3B6: Werner Koch <>First signature: E550B59F58DFC608
+
+7003fffu
+End of keylist.
