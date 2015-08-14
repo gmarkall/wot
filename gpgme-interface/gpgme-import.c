@@ -177,6 +177,8 @@ int main(void)
       return 8;
    }
 
+   // https://bugs.gnupg.org/gnupg/issue1670
+
    printf("Attempting to import %lu keys\n", i);
    err = gpgme_op_import_keys(ctx, keyarray);
    if (err != GPG_ERR_NO_ERROR) return 9;
