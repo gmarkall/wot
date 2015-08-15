@@ -1,0 +1,9 @@
+Notes on these conda recipes:
+
+1. The use of with-XXX as args to configure is likely erroneous, and worked only
+because the configure script found the correct programs on the path becuase they
+were already installed by conda. They should probably all be removed and
+rebuilt.
+
+2. The use of has_prefix_files in the meta.yamls is probably also superfluous -
+conda probably detected these files containing prefixes anyway.
