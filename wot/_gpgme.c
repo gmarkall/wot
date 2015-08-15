@@ -4,6 +4,8 @@
 #include <structmember.h>
 #include <gpgme.h>
 
+static const char* gpgme_version;
+
 typedef struct KeyringObject {
     PyObject_HEAD
     char* keyring_path;
@@ -90,8 +92,13 @@ static PyTypeObject KeyringType = {
     0,                                           /* tp_new */
 };
 
+PyObject*
+get_gpgme_version(PyObject* self, PyObject* args) {
+    return PyUnicode_FromString(gpgme_version);
+}
 
 static PyMethodDef ext_methods[] = {
+    { "get_gpgme_version", (PyCFunction)get_gpgme_version, METH_NOARGS, NULL },
     { NULL }
 };
 
@@ -101,8 +108,7 @@ static struct PyModuleDef moduledef = {
 
 int
 gpgme_setup(void) {
-    const char* version = gpgme_check_version("1.5.5");
-    printf("GPGME version: %s\n", version);
+    gpgme_version = gpgme_check_version(NULL);
     return 0;
 }
 
