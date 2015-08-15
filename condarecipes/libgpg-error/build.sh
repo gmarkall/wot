@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./configure && make && make install
+./configure --prefix=$PREFIX && make && make check && make install
