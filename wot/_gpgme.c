@@ -3,6 +3,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include <gpgme.h>
+#include <locale.h>
 
 static const char* gpgme_version;
 
@@ -97,8 +98,28 @@ get_gpgme_version(PyObject* self, PyObject* args) {
     return PyUnicode_FromString(gpgme_version);
 }
 
+PyObject*
+gpgme_setup(void) {
+    gpgme_error_t err;
+
+    /* Retrieve GPGME version */
+    gpgme_version = gpgme_check_version(NULL);
+    /* Set locale */
+    gpgme_set_locale(NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+    /* Check for OpenPGP support */
+    err = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
+    if(err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "gpgme_engine_check_version failed");
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ext_methods[] = {
     { "get_gpgme_version", (PyCFunction)get_gpgme_version, METH_NOARGS, NULL },
+    { "gpgme_setup", (PyCFunction)gpgme_setup, METH_NOARGS, NULL },
     { NULL }
 };
 
@@ -106,17 +127,8 @@ static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT, "_gpgme", "No docs", -1, ext_methods
 };
 
-int
-gpgme_setup(void) {
-    gpgme_version = gpgme_check_version(NULL);
-    return 0;
-}
-
 PyMODINIT_FUNC
 PyInit__gpgme(void) {
-    if (gpgme_setup() != 0)
-        return NULL;
-
     PyObject *m = PyModule_Create(&moduledef);
     if (m == NULL)
         return NULL;
