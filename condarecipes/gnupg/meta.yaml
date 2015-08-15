@@ -1,0 +1,30 @@
+package:
+  name: gnupg
+  version: 2.1.7
+
+source:
+  fn: gnupg-2.1.7.tar.bz2
+  url: https://www.gnupg.org/ftp/gcrypt/gnupg/gnupg-2.1.7.tar.bz2
+  sha256: c18a3776d47fec98892d51d28b6574ef16bf0a25eabb0956231058aaf2e7846e
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - libgpg-error 1.19
+    - libassuan 2.2.1
+    - libksba 1.3.3
+    - libgcrypt 1.6.3
+    - pinentry 0.9.5
+    - npth 1.2
+    - readline 6.2
+
+  run:
+    - libgpg-error 1.19
+    - libassuan 2.2.1
+    - libksba 1.3.3
+    - libgcrypt 1.6.3
+    - pinentry 0.9.5
+    - npth 1.2
+    - readline 6.2
