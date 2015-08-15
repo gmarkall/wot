@@ -1,0 +1,20 @@
+package:
+  name: pinentry
+  version: 0.9.5
+
+source:
+  fn: pinentry-0.9.5.tar.bz2
+  url: https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-0.9.5.tar.bz2
+  sha256: 6a57fd3afc0d8aaa5599ffcb3ea4e7c42c113a181e8870122203ea018384688c
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - libgpg-error 1.19
+    - libassuan 2.2.1
+
+  run:
+    - libgpg-error 1.19
+    - libassuan 2.2.1
