@@ -1,0 +1,21 @@
+package:
+  name: libgcrypt
+  version: 1.6.3
+
+source:
+  fn: libgcrypt-1.6.3.tar.bz2
+  url: https://www.gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.6.3.tar.bz2
+  sha256: 41b4917b93ae34c6a0e2127378d7a4d66d805a2a86a09911d4f9bd871db7025f
+
+build:
+  number: 0
+  has_prefix_files:
+    - bin/libgcrypt-config
+    - lib/libgcrypt.la
+
+requirements:
+  build:
+    - libgpg-error 1.19
+
+  run:
+    - libgpg-error 1.19

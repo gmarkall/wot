@@ -1,0 +1,14 @@
+package:
+  name: npth
+  version: 1.2
+
+source:
+  fn: npth-1.2.tar.bz2
+  url: ftp://ftp.gnupg.org/gcrypt/npth/npth-1.2.tar.bz2
+  sha256: 6ddbdddb2cf49a4723f9d1ad6563c480d6760dcb63cb7726b8fc3bc2e1b6c08a
+
+build:
+  number: 0
+  has_prefix_files:
+    - bin/npth-config
+    - lib/libnpth.la
