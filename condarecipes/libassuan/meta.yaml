@@ -1,0 +1,21 @@
+package:
+  name: libassuan
+  version: 2.2.1
+
+source:
+  fn: libassuan-2.2.1.tar.bz2
+  url: https://www.gnupg.org/ftp/gcrypt/libassuan/libassuan-2.2.1.tar.bz2
+  sha256: 949285bb79345362cb72a40c798defefc007031c60f2f10251720bf60a9de2de
+
+build:
+  number: 0
+  has_prefix_files:
+    - bin/libassuan-config
+    - lib/libassuan.la
+
+requirements:
+  build:
+    - libgpg-error 1.19
+
+  run:
+    - libgpg-error 1.19
