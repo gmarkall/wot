@@ -5,3 +5,5 @@
 __pycache__
 gpgme-interface/gpgme-sigs
 gpgme-interface/gpgme-import
+build
+*.so
