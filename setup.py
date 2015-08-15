@@ -1,9 +1,18 @@
 from distutils.core import setup, Extension
+import subprocess
 
 packages = [ 'wot' ]
 
-CFLAGS = []
-LDFLAGS = []
+gpgme_cflags = subprocess.check_output(['gpgme-config', '--cflags'],
+                                       universal_newlines=True)
+gpgme_ldflags = subprocess.check_output(['gpgme-config', '--libs'],
+                                        universal_newlines=True)
+
+print(gpgme_cflags.strip())
+print(gpgme_ldflags.strip())
+
+CFLAGS = [ gpgme_cflags.strip() ]
+LDFLAGS = [ gpgme_ldflags.strip() ]
 
 ext_gpgme = Extension(name='wot._gpgme',
                       sources=['wot/_gpgme.c'],

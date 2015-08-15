@@ -2,6 +2,7 @@
 
 #include <Python.h>
 #include <structmember.h>
+#include <gpgme.h>
 
 typedef struct KeyringObject {
     PyObject_HEAD
@@ -98,8 +99,18 @@ static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT, "_gpgme", "No docs", -1, ext_methods
 };
 
+int
+gpgme_setup(void) {
+    const char* version = gpgme_check_version("1.5.5");
+    printf("GPGME version: %s\n", version);
+    return 0;
+}
+
 PyMODINIT_FUNC
 PyInit__gpgme(void) {
+    if (gpgme_setup() != 0)
+        return NULL;
+
     PyObject *m = PyModule_Create(&moduledef);
     if (m == NULL)
         return NULL;
