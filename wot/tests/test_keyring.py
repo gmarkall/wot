@@ -1,5 +1,7 @@
-from wot._gpgme import Keyring
-import pytest, shutil, tempfile
+from wot._gpgme import gpgme_setup, Keyring
+import os, pytest, shutil, tempfile
+
+gpgme_setup()
 
 @pytest.fixture
 def keyring_folder(request):
@@ -37,3 +39,32 @@ def test_two_keyrings_independence(keyring_folder, keyring_folder_2):
     k2 = Keyring(keyring_folder_2)
     assert k1.get_path() == keyring_folder
     assert k2.get_path() == keyring_folder_2
+
+
+# Tests of listing keys
+
+@pytest.fixture(scope='module')
+def loc_test_keyrings():
+    return os.path.abspath(
+        os.path.join(__file__, '..', '..', '..', 'test_keyrings'))
+
+@pytest.fixture(scope='module')
+def loc_one_key(loc_test_keyrings):
+    return os.path.join(loc_test_keyrings, 'one_key')
+
+@pytest.fixture(scope='module')
+def loc_two_keys(loc_test_keyrings):
+    return os.path.join(loc_test_keyrings, 'two_keys')
+
+def test_list_keys_with_one_key(loc_one_key):
+    k = Keyring(loc_one_key)
+    assert k.list_keys() == [ 'Fedora' ]
+    assert k.list_keys('8E1431D5') == [ 'Fedora' ]
+    assert k.list_keys('67C6FAA2') == []
+
+def test_list_keys_with_two_keys(loc_two_keys):
+    k = Keyring(loc_two_keys)
+    assert k.list_keys() == [ 'Fedora', 'Petr Pisar' ]
+    assert k.list_keys('8E1431D5') == [ 'Fedora' ]
+    assert k.list_keys('67C6FAA2') == [ 'Petr Pisar' ]
+    assert k.list_keys('4F25E3B6') == []
