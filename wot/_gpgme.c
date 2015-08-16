@@ -4,10 +4,13 @@
 #include <structmember.h>
 #include <gpgme.h>
 #include <locale.h>
+#include <stdbool.h>
 
+/* Module-level variables */
 static const char* gpgme_version;
 static const char* protocol_name;
 static gpgme_engine_info_t default_engine_info;
+static bool setup = false;
 
 typedef struct KeyringObject {
     PyObject_HEAD
@@ -95,18 +98,34 @@ static PyTypeObject KeyringType = {
     0,                                           /* tp_new */
 };
 
+bool
+setup_check(void) {
+    if (!setup) {
+        PyErr_SetString(PyExc_RuntimeError, "GPGME not set up yet");
+    }
+    return setup;
+}
+
 PyObject*
 get_gpgme_version(PyObject* self, PyObject* args) {
+    if (!setup_check())
+        return NULL;
     return PyUnicode_FromString(gpgme_version);
 }
 
 PyObject*
 get_protocol_name(PyObject* self, PyObject* args) {
+    if (!setup_check())
+        return NULL;
     return PyUnicode_FromString(protocol_name);
 }
 
 PyObject*
 gpgme_setup(void) {
+    if (setup) {
+        PyErr_SetString(PyExc_RuntimeError, "GPGME already set up");
+        return NULL;
+    }
     gpgme_error_t err;
 
     /* Retrieve GPGME version */
@@ -132,6 +151,8 @@ gpgme_setup(void) {
                         "gpgme_get_engine_info failed");
         return NULL;
     }
+
+    setup = true;
 
     Py_RETURN_NONE;
 }
