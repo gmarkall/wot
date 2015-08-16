@@ -12,10 +12,19 @@ static const char* protocol_name;
 static gpgme_engine_info_t default_engine_info;
 static bool setup = false;
 
+bool
+setup_check(void) {
+    if (!setup) {
+        PyErr_SetString(PyExc_RuntimeError, "GPGME not set up yet");
+    }
+    return setup;
+}
+
 typedef struct KeyringObject {
     PyObject_HEAD
     char* keyring_path;
     Py_ssize_t keyring_path_len;
+    gpgme_ctx_t ctx;
 } KeyringObject;
 
 static int
@@ -31,24 +40,66 @@ Keyring_dealloc(KeyringObject* self) {
 
 static int
 Keyring_init(KeyringObject* self, PyObject* args, PyObject* kwds) {
+    if (!setup_check())
+        return -1;
+
     PyObject *bytes;
-    char* keyring_path;
-    Py_ssize_t len;
-
     if (!PyArg_ParseTuple(args, "O&", PyUnicode_FSConverter, &bytes))
-        return NULL;
+        return -1;
 
-    PyBytes_AsStringAndSize(bytes, &keyring_path, &len);
-    len += 1; // NUL terminator not counted by PyBytes_AsStringAndSize
-    self->keyring_path = (char*)malloc(len);
-    memcpy(self->keyring_path, keyring_path, len + 1);
-    self->keyring_path_len = len;
+    char* keyring_path;
+    int converr = PyBytes_AsStringAndSize(bytes, &keyring_path, NULL);
+    if (converr == -1) {
+        Py_DECREF(bytes);
+        return -1;
+    }
+
+    /* Create and configure GPGME context */
+    gpgme_error_t err;
+    err = gpgme_new(&(self->ctx));
+    if (err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError, "Error creating GPGME context");
+        Py_DECREF(bytes);
+        return -1;
+    }
+
+    err = gpgme_set_protocol(self->ctx, GPGME_PROTOCOL_OpenPGP);
+    if (err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError, "Error setting GPGME protocol");
+        Py_DECREF(bytes);
+        return -1;
+    }
+
+    err = gpgme_ctx_set_engine_info(self->ctx, GPGME_PROTOCOL_OpenPGP,
+              default_engine_info->file_name, keyring_path);
+    if (err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError,
+            "Error setting GPGME context engine info");
+        Py_DECREF(bytes);
+        return -1;
+    }
+
     Py_DECREF(bytes);
-
     return 0;
 }
 
+PyObject*
+Keyring_get_engine_file_name(KeyringObject* self, PyObject* args) {
+    gpgme_engine_info_t info = gpgme_ctx_get_engine_info(self->ctx);
+    return PyUnicode_FromString(info->file_name);
+}
+
+PyObject*
+Keyring_get_path(KeyringObject* self, PyObject* args) {
+    gpgme_engine_info_t info = gpgme_ctx_get_engine_info(self->ctx);
+    return PyUnicode_FromString(info->home_dir);
+}
+
 static PyMethodDef Keyring_methods[] = {
+    { "get_engine_file_name", (PyCFunction)Keyring_get_engine_file_name,
+      METH_NOARGS, NULL },
+    { "get_path", (PyCFunction)Keyring_get_path,
+      METH_NOARGS, NULL },
     { NULL }
 };
 
@@ -98,14 +149,6 @@ static PyTypeObject KeyringType = {
     0,                                           /* tp_new */
 };
 
-bool
-setup_check(void) {
-    if (!setup) {
-        PyErr_SetString(PyExc_RuntimeError, "GPGME not set up yet");
-    }
-    return setup;
-}
-
 PyObject*
 get_gpgme_version(PyObject* self, PyObject* args) {
     if (!setup_check())
@@ -153,7 +196,6 @@ gpgme_setup(void) {
     }
 
     setup = true;
-
     Py_RETURN_NONE;
 }
 
