@@ -95,11 +95,59 @@ Keyring_get_path(KeyringObject* self, PyObject* args) {
     return PyUnicode_FromString(info->home_dir);
 }
 
+PyObject*
+Keyring_list_keys(KeyringObject* self, PyObject* args) {
+    const char* keyid = NULL;
+    if (!PyArg_ParseTuple(args, "|s", &keyid))
+        return NULL;
+
+    /* Change context's mode to list local keys only */
+    gpgme_error_t err;
+    err = gpgme_set_keylist_mode(self->ctx, GPGME_KEYLIST_MODE_LOCAL);
+    if (err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError, "Unable to set keylist mode");
+        return NULL;
+    }
+
+    /* List keys and iterate over them */
+    err = gpgme_op_keylist_start(self->ctx, keyid, 0);
+    if (err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError, "Error starting keylist operation");
+        return NULL;
+    }
+
+    PyObject *keylist = PyList_New(0);
+    if (!keylist)
+        return NULL;
+
+    gpgme_key_t key;
+    while ((err = gpgme_op_keylist_next(self->ctx, &key)) == GPG_ERR_NO_ERROR) {
+        PyObject* name = PyUnicode_FromString(key->uids->name);
+        gpgme_key_release(key);
+
+        if (PyList_Append(keylist, name) != 0) {
+            Py_DECREF(keylist);
+            Py_DECREF(name);
+            return NULL;
+        }
+        Py_DECREF(name);
+    }
+
+    if (gpg_err_code(err) != GPG_ERR_EOF) {
+        PyErr_SetString(PyExc_RuntimeError, "Error during keylist operation");
+        Py_DECREF(keylist);
+        return NULL;
+    }
+
+    return keylist;
+}
+
 static PyMethodDef Keyring_methods[] = {
     { "get_engine_file_name", (PyCFunction)Keyring_get_engine_file_name,
       METH_NOARGS, NULL },
     { "get_path", (PyCFunction)Keyring_get_path,
       METH_NOARGS, NULL },
+    { "list_keys", (PyCFunction)Keyring_list_keys, METH_VARARGS, NULL },
     { NULL }
 };
 
