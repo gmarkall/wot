@@ -22,8 +22,6 @@ setup_check(void) {
 
 typedef struct KeyringObject {
     PyObject_HEAD
-    char* keyring_path;
-    Py_ssize_t keyring_path_len;
     gpgme_ctx_t ctx;
 } KeyringObject;
 
@@ -34,7 +32,7 @@ Keyring_traverse(KeyringObject* self, visitproc visit, void* arg) {
 
 static void
 Keyring_dealloc(KeyringObject* self) {
-    free(self->keyring_path);
+    gpgme_release(self->ctx);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
