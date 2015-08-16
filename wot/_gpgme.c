@@ -6,6 +6,8 @@
 #include <locale.h>
 
 static const char* gpgme_version;
+static const char* protocol_name;
+static gpgme_engine_info_t default_engine_info;
 
 typedef struct KeyringObject {
     PyObject_HEAD
@@ -99,13 +101,20 @@ get_gpgme_version(PyObject* self, PyObject* args) {
 }
 
 PyObject*
+get_protocol_name(PyObject* self, PyObject* args) {
+    return PyUnicode_FromString(protocol_name);
+}
+
+PyObject*
 gpgme_setup(void) {
     gpgme_error_t err;
 
     /* Retrieve GPGME version */
     gpgme_version = gpgme_check_version(NULL);
+
     /* Set locale */
     gpgme_set_locale(NULL, LC_CTYPE, setlocale (LC_CTYPE, NULL));
+
     /* Check for OpenPGP support */
     err = gpgme_engine_check_version(GPGME_PROTOCOL_OpenPGP);
     if(err != GPG_ERR_NO_ERROR) {
@@ -114,11 +123,22 @@ gpgme_setup(void) {
         return NULL;
     }
 
+    protocol_name = gpgme_get_protocol_name(GPGME_PROTOCOL_OpenPGP);
+
+    /* Get engine info defaults */
+    err = gpgme_get_engine_info(&default_engine_info);
+    if(err != GPG_ERR_NO_ERROR) {
+        PyErr_SetString(PyExc_RuntimeError,
+                        "gpgme_get_engine_info failed");
+        return NULL;
+    }
+
     Py_RETURN_NONE;
 }
 
 static PyMethodDef ext_methods[] = {
     { "get_gpgme_version", (PyCFunction)get_gpgme_version, METH_NOARGS, NULL },
+    { "get_protocol_name", (PyCFunction)get_protocol_name, METH_NOARGS, NULL },
     { "gpgme_setup", (PyCFunction)gpgme_setup, METH_NOARGS, NULL },
     { NULL }
 };
