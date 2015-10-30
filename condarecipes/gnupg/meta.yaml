@@ -8,7 +8,9 @@ source:
   sha256: c18a3776d47fec98892d51d28b6574ef16bf0a25eabb0956231058aaf2e7846e
 
 build:
-  number: 0
+  number: 1
+  binary_has_prefix_files:
+    - bin/gpgconf
 
 requirements:
   build:
