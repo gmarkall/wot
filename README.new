@@ -1,0 +1,8 @@
+python setup.py build_ext --inplace
+conda develop .
+export GPGME_DEBUG=9
+py.test --pyargs wot
+
+gpgconf in gnupg needs build/binary_has_prefix_files in meta.yaml and rebuilding.
+Problem is that it ontains the build dir as config, so when gpgme inits, it looks
+in the wrong place for the gpg binaries and errors out.
