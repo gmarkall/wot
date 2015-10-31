@@ -34,7 +34,7 @@ Running tests
 Execute the normal tests with:
 
 ```
-py.test --pyargs daal
+py.test --pyargs wot
 ```
 
 There are some tests for the initialisation code which must be run separately,
