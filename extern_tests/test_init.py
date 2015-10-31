@@ -2,7 +2,7 @@
 # it's not really possible to uninitialise and reinitialise the module in order
 # to test initialisation alongside other tests
 
-from wot import _gpgme
+from wot import _gpgme, keymgmt
 import pytest
 
 
@@ -21,9 +21,15 @@ def test_initialisation():
     with pytest.raises(RuntimeError):
         _gpgme.Keyring('')
 
+    # Test that passing an incorrect number of classes to set_key_classes fails
+    with pytest.raises(TypeError):
+        _gpgme.set_key_classes(keymgmt.Key, keymgmt.SubKey, keymgmt.UserID)
+
     # Set up and test that module level functions now work
 
     _gpgme.gpgme_setup()
+    _gpgme.set_key_classes(keymgmt.Key, keymgmt.SubKey, keymgmt.UserID,
+        keymgmt.Signature)
 
     assert _gpgme.get_gpgme_version() == '1.5.5'
     assert _gpgme.get_protocol_name() == 'OpenPGP'
@@ -32,6 +38,10 @@ def test_initialisation():
 
     with pytest.raises(RuntimeError):
         _gpgme.gpgme_setup()
+
+    with pytest.raises(RuntimeError):
+        _gpgme.set_key_classes(keymgmt.Key, keymgmt.SubKey, keymgmt.UserID,
+            keymgmt.Signature)
 
 if __name__ == '__main__':
     pytest.main()

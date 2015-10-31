@@ -11,13 +11,23 @@ static const char* gpgme_version;
 static const char* protocol_name;
 static gpgme_engine_info_t default_engine_info;
 static bool setup = false;
+static bool key_classes_set = false;
+PyObject* key_class;
+PyObject* subkey_class;
+PyObject* uid_class;
+PyObject* sig_class;
 
 bool
 setup_check(void) {
     if (!setup) {
         PyErr_SetString(PyExc_RuntimeError, "GPGME not set up yet");
+        return false;
     }
-    return setup;
+    if (!key_classes_set) {
+        PyErr_SetString(PyExc_RuntimeError, "Key classes not yet set");
+        return false;
+    }
+    return true;
 }
 
 typedef struct KeyringObject {
@@ -196,14 +206,14 @@ static PyTypeObject KeyringType = {
 };
 
 PyObject*
-get_gpgme_version(PyObject* self, PyObject* args) {
+get_gpgme_version(void) {
     if (!setup_check())
         return NULL;
     return PyUnicode_FromString(gpgme_version);
 }
 
 PyObject*
-get_protocol_name(PyObject* self, PyObject* args) {
+get_protocol_name(void) {
     if (!setup_check())
         return NULL;
     return PyUnicode_FromString(protocol_name);
@@ -245,10 +255,31 @@ gpgme_setup(void) {
     Py_RETURN_NONE;
 }
 
+PyObject*
+set_key_classes(PyObject* self, PyObject* args) {
+    if (key_classes_set) {
+        PyErr_SetString(PyExc_RuntimeError, "Key classes already set");
+        return NULL;
+    }
+
+    if (!PyArg_ParseTuple(args, "OOOO", &key_class, &subkey_class, &uid_class,
+            &sig_class))
+        return NULL;
+
+    Py_INCREF(key_class);
+    Py_INCREF(subkey_class);
+    Py_INCREF(uid_class);
+    Py_INCREF(sig_class);
+
+    key_classes_set = true;
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef ext_methods[] = {
     { "get_gpgme_version", (PyCFunction)get_gpgme_version, METH_NOARGS, NULL },
     { "get_protocol_name", (PyCFunction)get_protocol_name, METH_NOARGS, NULL },
     { "gpgme_setup", (PyCFunction)gpgme_setup, METH_NOARGS, NULL },
+    { "set_key_classes", (PyCFunction)set_key_classes, METH_VARARGS, NULL },
     { NULL }
 };
 
