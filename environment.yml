@@ -1,0 +1,11 @@
+name: wot-dev
+channels:
+- gmarkall
+dependencies:
+- bokeh
+- gpgme
+- jupyter
+- networkx
+- pandas
+- pytest
+- python=3.5
